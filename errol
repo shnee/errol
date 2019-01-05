@@ -1,0 +1,157 @@
+#!/bin/bash
+
+################################################################################
+# errol is a short and sweet script that will send a notification using the
+# Pushbullet API.
+#
+# Currently this script is only capable of sending to all devices connected to
+# your Pushbullet account.
+################################################################################
+
+
+# Required arguments
+TITLE=
+MSG=
+TOKEN=
+
+# Pushbullet API constants.
+PUSHBULLET_BASE_URL="https://api.pushbullet.com"
+USER_URL="${PUSHBULLET_BASE_URL}/v2/users/me"
+PUSH_URL="${PUSHBULLET_BASE_URL}/v2/pushes"
+DEVICES_URL="${PUSHBULLET_BASE_URL}/v2/devices"
+
+# Parameter strings.
+LONG_TITLE_STR="title"; SHORT_TITLE_STR="t"
+LONG_MSG_STR="msg";     SHORT_MSG_STR="m"
+LONG_TOKEN_STR="token"; SHORT_TOKEN_STR="k"
+
+
+################################################################################
+# Usage
+################################################################################
+function printusage() {
+    echo "
+Send a notification using the Pushbullet API.
+
+Usage:
+    $(basename "$0")
+        [-h|--help]
+        [(-$SHORT_TOKEN_STR|--$LONG_TOKEN_STR) token]
+        (-$SHORT_TITLE_STR|--$LONG_TITLE_STR) title
+        (-$SHORT_MSG_STR|--$LONG_MSG_STR) message
+
+Arguments:
+    -h,--help
+        Print this usage message.
+    -$SHORT_TOKEN_STR,--$LONG_TOKEN_STR
+        The Pushbullet API token. If not passed in from the commandline, this
+        value will be read from the \$PB_API_TOKEN environment variable. One or
+        the other must be provided.
+    -$SHORT_TITLE_STR,--$LONG_TITLE_STR
+        The title of the notification.
+    -$SHORT_MSG_STR,--$LONG_MSG_STR
+        The message body of the notification.
+
+"
+}
+
+
+################################################################################
+# Check that each of the required arguments has a valid value.
+################################################################################
+function checkForRequiredArgs() {
+
+    if [ -z $TITLE ] || [ -z $MSG ] || [ -z $TOKEN ]; then
+        echo "
+    Error: One of the required args was empty.
+
+    -$SHORT_TOKEN_STR,--$LONG_TOKEN_STR OR \$PB_API_TOKEN: $TOKEN
+    -$SHORT_TITLE_STR,--$LONG_TITLE_STR: $TITLE
+    -$SHORT_MSG_STR,--$LONG_MSG_STR: $MSG
+    "
+        printusage
+        exit 1
+    fi
+
+}
+
+
+################################################################################
+# Parse the command line arguments and populate the globals:
+#     $TOKEN, $TITLE, and $MSG
+################################################################################
+function parseArgs() {
+
+    LONG_OPTS="$LONG_TOKEN_STR:,$LONG_TITLE_STR:,$LONG_MSG_STR:,help"
+    SHORT_OPTS="$SHORT_TOKEN_STR:$SHORT_TITLE_STR:$SHORT_MSG_STR:h"
+
+    opts=$(getopt --longoptions "$LONG_OPTS" \
+                  --name "$(basename "$0")" \
+                  --options "$SHORT_OPTS" \
+                  -- "$@" )
+
+    # If there was an error exit and print usage.
+    if [ $? != 0 ]; then
+        echo "There was an error parsing the arguments.\n"
+        printusage
+        exit 1
+    fi
+
+    eval set -- "$opts"
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -$SHORT_TOKEN_STR | --$LONG_TOKEN_STR )
+                TOKEN="$2"
+                shift 2
+                ;;
+
+            -$SHORT_TITLE_STR | --$LONG_TITLE_STR )
+                TITLE="$2"
+                shift 2
+                ;;
+
+            -$SHORT_MSG_STR | --$LONG_MSG_STR )
+                MSG="$2"
+                shift 2
+                ;;
+
+            -h | --help )
+                printusage
+                exit 0
+                ;;
+
+            -- )
+                shift
+                break
+                ;;
+
+            *)
+                break
+                ;;
+
+        esac
+    done
+
+}
+
+
+################################################################################
+# main body
+################################################################################
+
+parseArgs "$@"
+
+# Pull the API token from the environment variable if it hasn't been set from
+# parsing the args.
+TOKEN="${TOKEN:-$PB_API_TOKEN}"
+
+checkForRequiredArgs
+
+# Run this comment to get pushbullet user info.
+#curl -u ${TOKEN}: $USER_URL
+
+curl -u $TOKEN: -X POST $PUSH_URL \
+    --header 'Content-Type: application/json' \
+    --data-binary '{"type": "note", "title": "'"$TITLE"'", "body": "'"$MSG"'"}'
+
