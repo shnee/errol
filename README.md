@@ -9,6 +9,7 @@ account simultanesouly.
 Usage
 ----------------------------------------
 
+```
 Usage:
     errol
         [-h|--help]
@@ -27,4 +28,4 @@ Arguments:
         The title of the notification.
     -m,--msg
         The message body of the notification.
-
+```
