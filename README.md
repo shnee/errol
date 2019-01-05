@@ -21,7 +21,7 @@ Arguments:
     -h,--help
         Print this usage message.
     -k,--token
-        The Pushbullet API token. If not passed in form the commandline, this
+        The Pushbullet API token. If not passed in from the commandline, this
         value will be read from the $PB_API_TOKEN environment variable. One or
         the other must be provided.
     -t,--title
