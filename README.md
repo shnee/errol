@@ -27,5 +27,6 @@ Arguments:
     -t,--title
         The title of the notification.
     -m,--msg
-        The message body of the notification.
+        The message body of the notification. Multi-line messages must be done
+        with literal '\n's.
 ```

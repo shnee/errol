@@ -50,7 +50,8 @@ Arguments:
     -$SHORT_TITLE_STR,--$LONG_TITLE_STR
         The title of the notification.
     -$SHORT_MSG_STR,--$LONG_MSG_STR
-        The message body of the notification.
+        The message body of the notification. Multi-line messages must be done
+        with literal '\n's.
 
 "
 }
@@ -61,7 +62,7 @@ Arguments:
 ################################################################################
 function checkForRequiredArgs() {
 
-    if [ -z $TITLE ] || [ -z $MSG ] || [ -z $TOKEN ]; then
+    if [ -z "$TITLE" ] || [ -z "$MSG" ] || [ -z "$TOKEN" ]; then
         echo "
     Error: One of the required args was empty.
 
